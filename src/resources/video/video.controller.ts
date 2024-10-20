@@ -10,5 +10,4 @@ export class VideoController {
   async create(@Body() createVideoDto: createVideoDto) {
     return this.videoService.create(createVideoDto);
   }
-
 }

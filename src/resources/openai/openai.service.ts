@@ -1,7 +1,9 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import * as path from 'path';
+import * as fs from "fs";
+import dayjs from 'dayjs';
 
 @Injectable()
 export class OpenaiService {
@@ -14,23 +16,6 @@ export class OpenaiService {
   ) {
     this.apiKey = this.configService.get<string>('OPENAI_KEY');
     this.openai = new OpenAI({apiKey: this.apiKey});
-  }
-
-  async createImages(prompt: string, imagesNumber: number = 1): Promise<string[]> {
-    try {
-      const finalPrompt: string = `Crie uma sequência de imagens que ilustrem a história contada a seguir, retornando cada imagem na ordem em que aparecem no texto. A história é: ${prompt}`;
-      const response = await this.openai.images.generate({
-        prompt: finalPrompt,
-        model: "dall-e-2",
-        n: imagesNumber,
-        size: '1024x1024',
-      });
-  
-      return response.data.map((img) => img.url);
-    } catch (error) {
-      console.error('Error generating images:', error);
-      throw new Error('Failed to generate images');
-    }
   }
 
   async createStory(prompt: string): Promise<string> {
@@ -51,6 +36,24 @@ export class OpenaiService {
     } catch (error) {
       console.error('Error generating video story:', error);
       throw new Error('Failed to generate story');
+    }
+  }
+
+  async textToSpeech(prompt: string) {
+    try {
+      const speechFile = path.resolve(`./audios/${Date.now()}.mp3`);
+
+      const mp3 = await this.openai.audio.speech.create({
+        model: "tts-1",
+        voice: "nova",
+        input: prompt,       
+      });
+    
+      const buffer = Buffer.from(await mp3.arrayBuffer());
+      await fs.promises.writeFile(speechFile, buffer);
+    } catch (error) {
+      console.error('Error generating audio story:', error);
+      throw new Error('Failed to generate audi');
     }
   }
 }

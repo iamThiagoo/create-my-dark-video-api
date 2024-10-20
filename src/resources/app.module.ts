@@ -5,6 +5,7 @@ import { VideoModule } from './video/video.module';
 import { OpenaiModule } from './openai/openai.module';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { PexelsModule } from './pexels/pexels.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { HttpModule } from '@nestjs/axios';
     }),
     VideoModule,
     OpenaiModule,
-    HttpModule
+    HttpModule,
+    PexelsModule,
   ],
   controllers: [TestController],
 })

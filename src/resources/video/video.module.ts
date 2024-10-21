@@ -3,11 +3,11 @@ import { VideoService } from './video.service';
 import { VideoController } from './video.controller';
 import { OpenaiService } from '../openai/openai.service';
 import { HttpModule } from '@nestjs/axios';
-import { PexelsService } from '../pexels/pexels.service';
+import { ReplicateService } from '../replicate/replicate.service';
 
 @Module({
   imports: [HttpModule],
   controllers: [VideoController],
-  providers: [VideoService, OpenaiService, PexelsService],
+  providers: [VideoService, OpenaiService, ReplicateService],
 })
 export class VideoModule {}

@@ -56,40 +56,4 @@ export class OpenaiService {
       throw new Error('Failed to generate audi');
     }
   }
-
-  // async createImages(prompt: string, uniqueId : string) {
-  //   try {
-  //     let images = [];
-  //     const keywords = this.extractKeywords(prompt);
-
-  //     const imagePromises = keywords.map(async (keyword) => {
-  //       const response = await this.openai.images.generate({
-  //         model: "dall-e-3",
-  //         prompt: keyword,
-  //         size: "1024x1024",
-  //         quality: "standard",
-  //         n: 1,
-  //       });
-  
-  //       if (response.data && response.data.length > 0) {
-  //         images.push(response.data[0].url);
-  //       }
-  //     });
-
-  //     await Promise.all(imagePromises);
-  //     console.log(images)
-    
-  //     return images;
-
-  //   } catch (error) {
-  //     console.error('Error generating audio story:', error);
-  //     throw new Error('Failed to generate audi');
-  //   }
-  // }
-
-  // extractKeywords(text) {
-  //   const sentences = text.split(/[\.\,]+/).map(sentence => sentence.trim()).filter(Boolean);
-  //   const keywords = sentences.filter(sentence => sentence.length >= 20);
-  //   return keywords;
-  // }
 }

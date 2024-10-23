@@ -7,9 +7,9 @@ import { HttpModule } from '@nestjs/axios';
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
-    })
+    }),
   ],
   providers: [OpenaiService],
-  exports: [OpenaiService]
+  exports: [OpenaiService],
 })
 export class OpenaiModule {}

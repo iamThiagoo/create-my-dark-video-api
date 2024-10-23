@@ -3,6 +3,8 @@
 /node_modules
 /build
 /audios
+/images
+/videos
 
 # Logs
 logs

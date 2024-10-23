@@ -1,34 +1,62 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createWriteStream, mkdirSync } from 'fs';
+import { join } from 'path';
 import Replicate from 'replicate';
+import { getStoryChunks } from 'src/utils/helpers';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
 
 @Injectable()
 export class ReplicateService {
-
-  private readonly apiKey : string;
+  private readonly apiKey: string;
   private readonly replicate;
 
-  constructor(
-    private readonly configService : ConfigService
-  ) {
+  constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('REPLICATE_KEY');
-    this.replicate = new Replicate({auth: this.configService.get<string>('OPENAI_KEY')});
+    this.replicate = new Replicate({ auth: this.apiKey });
   }
 
-  async getImages(story, uniqueId) {
+  async getImages(story: string, uniqueId: string) {
     try {
-      // TO-DO
-      const keywords = this.extractKeywords(story);
+      const keywords = getStoryChunks(story);
+      const imageDir = `images/${uniqueId}`;
+      mkdirSync(imageDir, { recursive: true });
+      const imagesNameArray = [];
 
+      await Promise.all(
+        keywords.map(async (keyword, index) => {
+          const input = {
+            prompt: `${keyword}`,
+          };
+
+          const filename = `image_${index + 1}.jpg`;
+          const output = await this.replicate.run(
+            'black-forest-labs/flux-schnell',
+            { input },
+          );
+          const imageUrl = output[0];
+          const response = await fetch(imageUrl);
+          const readableStream = response.body;
+
+          await this.saveImageFromStream(
+            readableStream,
+            join(imageDir, filename),
+          );
+          imagesNameArray.push(join(imageDir, filename));
+        }),
+      );
+
+      return imagesNameArray;
     } catch (error) {
       console.error('Error getting Replicate images:', error);
       throw new Error('Failed to get Replicate images');
     }
   }
 
-  extractKeywords(text) {
-    const sentences = text.split(/[\.\,]+/).map(sentence => sentence.trim()).filter(Boolean);
-    const keywords = sentences.filter(sentence => sentence.length >= 25);
-    return keywords;
+  async saveImageFromStream(stream: ReadableStream, filename: string) {
+    const pipelineAsync = promisify(pipeline);
+    const writeStream = createWriteStream(filename);
+    await pipelineAsync(stream, writeStream);
   }
 }

@@ -6,6 +6,6 @@ import { ReplicateService } from './replicate.service';
   imports: [HttpModule],
   controllers: [],
   providers: [ReplicateService],
-  exports: [ReplicateService]
+  exports: [ReplicateService],
 })
 export class ReplicateModule {}

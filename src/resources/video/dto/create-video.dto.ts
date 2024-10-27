@@ -1,9 +1,6 @@
 import {
   IsBoolean,
-  IsNumber,
-  IsOptional,
   IsString,
-  Max,
 } from 'class-validator';
 
 export class createVideoDto {
@@ -12,9 +9,4 @@ export class createVideoDto {
 
   @IsBoolean()
   generateStory: boolean;
-
-  @IsOptional()
-  @IsNumber()
-  @Max(5) // Infelizmente, tudo tem um limite :(
-  imagesNumber: number;
 }

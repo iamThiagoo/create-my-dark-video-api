@@ -21,40 +21,66 @@ export class VideoService {
     try {
       let uniqueId = generateUniqueId();
       let story = data.generateStory ? await this.openAiService.createStory(data.prompt) : data.prompt;
-      // let audio = await this.openAiService.textToSpeech(story, uniqueId);
-      // let images = await this.replicateService.getImages(story, uniqueId);
+      let audio = await this.openAiService.textToSpeech(story, uniqueId);
+      let images = await this.replicateService.getImages(story, uniqueId);
 
-      let audio = "audios/m2mi34v7qimuxpavbm.mp3";
-      let images = [
-        "images/m2mi34v7qimuxpavbm/image_1.jpg",
-        "images/m2mi34v7qimuxpavbm/image_2.jpg",
-        "images/m2mi34v7qimuxpavbm/image_3.jpg",
-        "images/m2mi34v7qimuxpavbm/image_4.jpg",
-        "images/m2mi34v7qimuxpavbm/image_5.jpg",
-        "images/m2mi34v7qimuxpavbm/image_6.jpg",
-        "images/m2mi34v7qimuxpavbm/image_7.jpg",
-        "images/m2mi34v7qimuxpavbm/image_8.jpg",
-      ];
-      
-      const command = this.ffmpeg(audio)
-      
-      images.forEach((item) => {
-        command.input(item);
-      })
+      const command = this.ffmpeg(audio);
+      const audioDurationInSeconds : any = await this.getAudioDuration(audio);
+      const imageDuration = audioDurationInSeconds / images.length;
 
-      command.output(`videos/${uniqueId}.mp4`)
+      images.forEach((item, index) => {
+        command
+          .input(item)
+          .inputOptions([`-loop 1`])
+          .inputOptions([`-t ${imageDuration}`])
+      });
+
+      const filterComplex = images
+        .map((_, index) => `[${index + 1}:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v${index}];`)
+        .join('');
+
+      const streamReferences = images
+        .map((_, index) => `[v${index}]`)
+        .join('');
+
+      command
+        .complexFilter(`${filterComplex}${streamReferences}concat=n=${images.length}:v=1:a=0[outv]`)
+        .outputOptions([
+          '-map [outv]',
+          '-map 0:a',
+          '-c:v libx264',
+          '-c:a copy',
+          '-shortest'
+        ])
+        .output(`videos/${uniqueId}.mp4`);
+
       command.on("error", (err) => {
         console.log(err);
-      })
+      });
+
       command.on("end", () => {
         console.log("File saved.");
-      })
-      
+      });
+
       command.run();
 
     } catch (error) {
       console.log(error);
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  getAudioDuration(audioPath) {
+    return new Promise((resolve, reject) => {
+      this.ffmpeg.ffprobe(audioPath, (err, metadata) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const duration = metadata.format.duration;
+        resolve(duration);
+      });
+    });
   }
 }

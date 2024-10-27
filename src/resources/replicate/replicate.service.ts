@@ -10,17 +10,19 @@ import { promisify } from 'util';
 @Injectable()
 export class ReplicateService {
   private readonly apiKey: string;
-  private readonly replicate;
+  private readonly replicate: Replicate;
+  private readonly replicateModel: `${string}/${string}` | `${string}/${string}:${string}`;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('REPLICATE_KEY');
     this.replicate = new Replicate({ auth: this.apiKey });
+    this.replicateModel = this.configService.get<`${string}/${string}` | `${string}/${string}:${string}`>('REPLICATE_MODEL')
   }
 
   async getImages(story: string, uniqueId: string) {
     try {
       const keywords = getStoryChunks(story);
-      const imageDir = `images/${uniqueId}`;
+      const imageDir = `output/images/${uniqueId}`;
       mkdirSync(imageDir, { recursive: true });
       const imagesNameArray = [];
 
@@ -32,8 +34,9 @@ export class ReplicateService {
 
           const filename = `image_${index + 1}.jpg`;
           const output = await this.replicate.run(
-            'black-forest-labs/flux-schnell',
+            this.replicateModel,
             { input },
+
           );
           const imageUrl = output[0];
           const response = await fetch(imageUrl);

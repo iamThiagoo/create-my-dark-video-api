@@ -1,7 +1,9 @@
 import {
   IsBoolean,
+  IsOptional,
   IsString,
 } from 'class-validator';
+import { VoiceOptions } from 'src/@types';
 
 export class createVideoDto {
   @IsString()
@@ -9,4 +11,8 @@ export class createVideoDto {
 
   @IsBoolean()
   generateStory: boolean;
+
+  @IsOptional()
+  @IsString()
+  voice: VoiceOptions; 
 }

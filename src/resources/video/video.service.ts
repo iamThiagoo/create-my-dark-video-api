@@ -3,7 +3,6 @@ import { OpenaiService } from '../openai/openai.service';
 import { createVideoDto } from './dto/create-video.dto';
 import { generateUniqueId } from 'src/utils/helpers';
 import { ReplicateService } from '../replicate/replicate.service';
-import * as fs from 'fs';
 
 @Injectable()
 export class VideoService {
@@ -21,7 +20,7 @@ export class VideoService {
     try {
       let uniqueId = generateUniqueId();
       let story = data.generateStory ? await this.openAiService.createStory(data.prompt) : data.prompt;
-      let audio = await this.openAiService.textToSpeech(story, uniqueId);
+      let audio = await this.openAiService.textToSpeech(story, uniqueId, data.voice ?? 'nova');
       let images = await this.replicateService.getImages(story, uniqueId);
 
       const command = this.ffmpeg(audio);
@@ -48,11 +47,11 @@ export class VideoService {
         .outputOptions([
           '-map [outv]',
           '-map 0:a',
-          '-c:v libx264',
+          '-c:v h264',
           '-c:a copy',
           '-shortest'
         ])
-        .output(`videos/${uniqueId}.mp4`);
+        .output(`output/videos/${uniqueId}.mp4`);
 
       command.on("error", (err) => {
         console.log(err);

@@ -3,6 +3,7 @@ import { OpenaiService } from '../openai/openai.service';
 import { createVideoDto } from './dto/create-video.dto';
 import { generateUniqueId } from 'src/utils/helpers';
 import { ReplicateService } from '../replicate/replicate.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class VideoService {
@@ -20,7 +21,7 @@ export class VideoService {
     try {
       const uniqueId = generateUniqueId();
       const story = data.generateStory ? await this.openAiService.createStory(data.prompt) : data.prompt;
-      const audio = await this.openAiService.textToSpeech(story, uniqueId);
+      const audio = await this.openAiService.textToSpeech(story, uniqueId, data.voice ?? 'nova');
       const images = await this.replicateService.getImages(story, uniqueId);
 
       return new Promise(async (resolve, reject) => {
@@ -53,7 +54,7 @@ export class VideoService {
               '-c:a copy',
               '-shortest'
             ])
-            .output(`videos/${uniqueId}.mp4`);
+            .output(`output/videos/${uniqueId}.mp4`);
 
           command.on('error', (err) => {
             console.error('Error during video creation:', err);
@@ -63,11 +64,11 @@ export class VideoService {
           command.on('end', async () => {
             try {
               console.log('Video processing completed');
-              if (!fs.existsSync(`videos/${uniqueId}.mp4`)) {
+              if (!fs.existsSync(`output/videos/${uniqueId}.mp4`)) {
                 throw new Error('Video file not found after processing');
               }
 
-              const videoStream = fs.createReadStream(`videos/${uniqueId}.mp4`);
+              const videoStream = fs.createReadStream(`output/videos/${uniqueId}.mp4`);
               const streamableFile = new StreamableFile(videoStream, {
                 type: 'video/mp4',
                 disposition: `attachment; filename="${uniqueId}.mp4"`,

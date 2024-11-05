@@ -50,7 +50,7 @@ export class OpenaiService {
       return speechFile;
     } catch (error) {
       console.error('Error generating audio story:', error);
-      throw new Error('Failed to generate audi');
+      throw new Error('Failed to generate audio');
     }
   }
 }

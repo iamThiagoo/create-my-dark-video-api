@@ -27,6 +27,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.4.5",
     "@nestjs/throttler": "^6.2.1",
+    "@types/fluent-ffmpeg": "^2.1.26",
     "axios": "^1.7.7",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

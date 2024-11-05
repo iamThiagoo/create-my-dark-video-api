@@ -3,7 +3,6 @@ import { OpenaiService } from '../openai/openai.service';
 import { createVideoDto } from './dto/create-video.dto';
 import { generateUniqueId } from 'src/utils/helpers';
 import { ReplicateService } from '../replicate/replicate.service';
-import * as fs from 'fs';
 
 @Injectable()
 export class VideoService {

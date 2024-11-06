@@ -6,6 +6,8 @@ import { OpenaiModule } from './openai/openai.module';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { ReplicateModule } from './replicate/replicate.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CacheManagerModule } from './cache-manager/cache-manager.module';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { ReplicateModule } from './replicate/replicate.module';
     OpenaiModule,
     HttpModule,
     ReplicateModule,
+    CacheManagerModule
   ],
   controllers: [TestController],
 })

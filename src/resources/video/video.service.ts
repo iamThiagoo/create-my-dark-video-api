@@ -4,21 +4,31 @@ import { createVideoDto } from './dto/create-video.dto';
 import { generateUniqueId } from 'src/utils/helpers';
 import { ReplicateService } from '../replicate/replicate.service';
 import * as fs from 'fs';
+import { CacheManagerService } from '../cache-manager/cache-manager.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class VideoService {
 
   private readonly ffmpeg;
+  private readonly requestsLimit: number;
 
   constructor(
     private readonly openAiService: OpenaiService,
     private readonly replicateService: ReplicateService,
+    private readonly cacheService: CacheManagerService,
+    private readonly configService: ConfigService
   ) {
     this.ffmpeg = require('fluent-ffmpeg');
+    this.requestsLimit = this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
   }
 
-  async create(data: createVideoDto) {
+  async create(data: createVideoDto, ip: string) {
     try {
+      if (!this.cacheService.UserCanGenerateVideo(ip)) {
+        throw new HttpException(`You can only generate ${this.requestsLimit} video every day`, HttpStatus.TOO_MANY_REQUESTS)
+      }
+      
       const uniqueId = generateUniqueId();
       const story = data.generateStory ? await this.openAiService.createStory(data.prompt) : data.prompt;
       const audio = await this.openAiService.textToSpeech(story, uniqueId, data.voice ?? 'nova');

@@ -30,7 +30,7 @@ export class VideoService {
       }
       
       const uniqueId = generateUniqueId();
-      const story = data.generateStory ? await this.openAiService.createStory(data.prompt) : data.prompt;
+      const story = data.enableNoAIStoryOption ? await this.openAiService.translateStory(data.prompt, data.language) : await this.openAiService.createStory(data.prompt, data.language);
       const audio = await this.openAiService.textToSpeech(story, uniqueId, data.voice ?? 'nova');
       const images = await this.replicateService.getImages(story, uniqueId);
 

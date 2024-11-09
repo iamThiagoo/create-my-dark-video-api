@@ -8,7 +8,9 @@ export class CsrfController {
 
   @Post()
   getCsrfToken(@Req() req, @Res() res: Response) {
-    const { generateToken } = doubleCsrf({ getSecret: () => process.env.CSRF_SECRET });
+    const { generateToken } = doubleCsrf({
+      getSecret: () => process.env.CSRF_SECRET,
+    });
     const csrfToken = generateToken(req, res, true, true);
     res.cookie('token', csrfToken, {
       httpOnly: process.env.NODE_ENV === 'production',

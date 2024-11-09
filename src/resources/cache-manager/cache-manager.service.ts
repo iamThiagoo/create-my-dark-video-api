@@ -10,14 +10,16 @@ export class CacheManagerService {
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
     this.cacheTime = this.configService.get<number>('CACHE_TIME') || 86400;
-    this.requestsLimit = this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
+    this.requestsLimit =
+      this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
   }
 
   async UserCanGenerateVideo(ip: string): Promise<boolean> {
-    const cacheRequests: number = await this.cacheManager.get<number>(ip) || 0;
+    const cacheRequests: number =
+      (await this.cacheManager.get<number>(ip)) || 0;
 
     if (cacheRequests >= this.requestsLimit) {
       return false;

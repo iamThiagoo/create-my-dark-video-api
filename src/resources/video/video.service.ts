@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable, StreamableFile } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { OpenaiService } from '../openai/openai.service';
 import { createVideoDto } from './dto/create-video.dto';
 import { generateUniqueId } from 'src/utils/helpers';
@@ -9,7 +14,6 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class VideoService {
-
   private readonly ffmpeg;
   private readonly requestsLimit: number;
 
@@ -17,27 +21,38 @@ export class VideoService {
     private readonly openAiService: OpenaiService,
     private readonly replicateService: ReplicateService,
     private readonly cacheService: CacheManagerService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
     this.ffmpeg = require('fluent-ffmpeg');
-    this.requestsLimit = this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
+    this.requestsLimit =
+      this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
   }
 
   async create(data: createVideoDto, ip: string) {
     try {
       if (!this.cacheService.UserCanGenerateVideo(ip)) {
-        throw new HttpException(`You can only generate ${this.requestsLimit} video every day`, HttpStatus.TOO_MANY_REQUESTS)
+        throw new HttpException(
+          `You can only generate ${this.requestsLimit} video every day`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
-      
+
       const uniqueId = generateUniqueId();
-      const story = data.enableNoAIStoryOption ? await this.openAiService.translateStory(data.prompt, data.language) : await this.openAiService.createStory(data.prompt, data.language);
-      const audio = await this.openAiService.textToSpeech(story, uniqueId, data.voice ?? 'nova');
+      const story = data.enableNoAIStoryOption
+        ? await this.openAiService.translateStory(data.prompt, data.language)
+        : await this.openAiService.createStory(data.prompt, data.language);
+      const audio = await this.openAiService.textToSpeech(
+        story,
+        uniqueId,
+        data.voice ?? 'nova',
+      );
       const images = await this.replicateService.getImages(story, uniqueId);
 
       return new Promise(async (resolve, reject) => {
         try {
           const command = this.ffmpeg(audio);
-          const audioDurationInSeconds: any = await this.getAudioDuration(audio);
+          const audioDurationInSeconds: any =
+            await this.getAudioDuration(audio);
           const imageDuration = audioDurationInSeconds / images.length;
 
           images.forEach((item) => {
@@ -48,7 +63,10 @@ export class VideoService {
           });
 
           const filterComplex = images
-            .map((_, index) => `[${index + 1}:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v${index}];`)
+            .map(
+              (_, index) =>
+                `[${index + 1}:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v${index}];`,
+            )
             .join('');
 
           const streamReferences = images
@@ -56,19 +74,26 @@ export class VideoService {
             .join('');
 
           command
-            .complexFilter(`${filterComplex}${streamReferences}concat=n=${images.length}:v=1:a=0[outv]`)
+            .complexFilter(
+              `${filterComplex}${streamReferences}concat=n=${images.length}:v=1:a=0[outv]`,
+            )
             .outputOptions([
               '-map [outv]',
               '-map 0:a',
               '-c:v libx264',
               '-c:a copy',
-              '-shortest'
+              '-shortest',
             ])
             .output(`output/videos/${uniqueId}.mp4`);
 
           command.on('error', (err) => {
             console.error('Error during video creation:', err);
-            reject(new HttpException('Error processing video', HttpStatus.INTERNAL_SERVER_ERROR));
+            reject(
+              new HttpException(
+                'Error processing video',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+              ),
+            );
           });
 
           command.on('end', async () => {
@@ -78,7 +103,9 @@ export class VideoService {
                 throw new Error('Video file not found after processing');
               }
 
-              const videoStream = fs.createReadStream(`output/videos/${uniqueId}.mp4`);
+              const videoStream = fs.createReadStream(
+                `output/videos/${uniqueId}.mp4`,
+              );
               const streamableFile = new StreamableFile(videoStream, {
                 type: 'video/mp4',
                 disposition: `attachment; filename="${uniqueId}.mp4"`,
@@ -87,22 +114,31 @@ export class VideoService {
               resolve(streamableFile);
             } catch (error) {
               console.error('Error creating video stream:', error);
-              reject(new HttpException('Error creating video stream', HttpStatus.INTERNAL_SERVER_ERROR));
+              reject(
+                new HttpException(
+                  'Error creating video stream',
+                  HttpStatus.INTERNAL_SERVER_ERROR,
+                ),
+              );
             }
           });
 
           await command.run();
         } catch (error) {
           console.error('Error in video processing:', error);
-          reject(new HttpException('Error processing video', HttpStatus.INTERNAL_SERVER_ERROR));
+          reject(
+            new HttpException(
+              'Error processing video',
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            ),
+          );
         }
       });
-
     } catch (error) {
       console.error('Error in create method:', error);
       throw new HttpException(
         error.message || 'Bad Request',
-        error.status || HttpStatus.BAD_REQUEST
+        error.status || HttpStatus.BAD_REQUEST,
       );
     }
   }

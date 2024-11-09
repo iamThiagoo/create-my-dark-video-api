@@ -14,10 +14,13 @@ export class OpenaiService {
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('OPENAI_KEY');
     this.openai = new OpenAI({ apiKey: this.apiKey });
-    this.openaiModel = this.configService.get<string>('OPENAI_MODEL')
+    this.openaiModel = this.configService.get<string>('OPENAI_MODEL');
   }
 
-  async createStory(prompt: string, language: LanguageEnum = LanguageEnum.Portuguese): Promise<string> {
+  async createStory(
+    prompt: string,
+    language: LanguageEnum = LanguageEnum.Portuguese,
+  ): Promise<string> {
     try {
       const finalPrompt: string = `Crie uma história envolvente totalmente em ${language} emocionante que seja perfeita para um vídeo de até 30 segundos sobre: ${prompt}.A história deve ter um início cativante, um desenvolvimento intrigante e um desfecho surpreendente. Utilize descrições vívidas e emoções para capturar a atenção do espectador.`;
 
@@ -35,7 +38,10 @@ export class OpenaiService {
     }
   }
 
-  async translateStory(prompt: string, language: LanguageEnum = LanguageEnum.Portuguese): Promise<string> {
+  async translateStory(
+    prompt: string,
+    language: LanguageEnum = LanguageEnum.Portuguese,
+  ): Promise<string> {
     try {
       const finalPrompt: string = `Traduza esse texto para ${language}: ${prompt}`;
 
@@ -53,7 +59,11 @@ export class OpenaiService {
     }
   }
 
-  async textToSpeech(prompt: string, uniqueId: string, voice: VoiceOptions = 'nova'): Promise<string> {
+  async textToSpeech(
+    prompt: string,
+    uniqueId: string,
+    voice: VoiceOptions = 'nova',
+  ): Promise<string> {
     try {
       const speechFile = path.resolve(`output/audios/${uniqueId}.mp3`);
 

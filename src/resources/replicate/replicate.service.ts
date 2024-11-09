@@ -11,12 +11,16 @@ import { promisify } from 'util';
 export class ReplicateService {
   private readonly apiKey: string;
   private readonly replicate: Replicate;
-  private readonly replicateModel: `${string}/${string}` | `${string}/${string}:${string}`;
+  private readonly replicateModel:
+    | `${string}/${string}`
+    | `${string}/${string}:${string}`;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('REPLICATE_KEY');
     this.replicate = new Replicate({ auth: this.apiKey });
-    this.replicateModel = this.configService.get<`${string}/${string}` | `${string}/${string}:${string}`>('REPLICATE_MODEL')
+    this.replicateModel = this.configService.get<
+      `${string}/${string}` | `${string}/${string}:${string}`
+    >('REPLICATE_MODEL');
   }
 
   async getImages(story: string, uniqueId: string) {
@@ -33,11 +37,9 @@ export class ReplicateService {
           };
 
           const filename = `image_${index + 1}.jpg`;
-          const output = await this.replicate.run(
-            this.replicateModel,
-            { input },
-
-          );
+          const output = await this.replicate.run(this.replicateModel, {
+            input,
+          });
           const imageUrl = output[0];
           const response = await fetch(imageUrl);
           const readableStream = response.body;

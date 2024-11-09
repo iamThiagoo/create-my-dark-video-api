@@ -26,7 +26,7 @@ import { CsrfModule } from './csrf/csrf.module';
     HttpModule,
     ReplicateModule,
     CacheManagerModule,
-    CsrfModule
+    CsrfModule,
   ],
   controllers: [TestController],
 })

@@ -6,8 +6,12 @@ import { CsrfMiddleware } from './middleware/csrf.middleware';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
-  app.use(cookieParser());
+  app.enableCors({
+    origin: process.env.APP_URL,
+    credentials: true,
+  });
+  
+  app.use(cookieParser(process.env.CSRF_SECRET));
 
   const csrfMiddleware = new CsrfMiddleware();
   app.use(csrfMiddleware.use.bind(csrfMiddleware));

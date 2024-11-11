@@ -18,13 +18,12 @@ export class CacheManagerService {
   }
 
   async UserCanGenerateVideo(ip: string): Promise<boolean> {
-    const cacheRequests: number =
-      (await this.cacheManager.get<number>(ip)) || 0;
+    const cacheRequests: number = await this.cacheManager.get<number>(ip) || 0;
 
     if (cacheRequests >= this.requestsLimit) {
       return false;
     }
-
+  
     await this.cacheManager.set(ip, cacheRequests + 1, this.cacheTime);
     return true;
   }

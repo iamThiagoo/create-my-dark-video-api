@@ -16,7 +16,7 @@ export class CsrfController {
       httpOnly: process.env.NODE_ENV === 'production',
       secure: process.env.NODE_ENV === 'production',
       signed: true,
-      sameSite: 'none'
+      sameSite: 'strict'
     });
     res.json({ csrfToken });
   }

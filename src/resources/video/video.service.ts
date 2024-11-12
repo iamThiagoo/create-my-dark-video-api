@@ -11,6 +11,7 @@ import { ReplicateService } from '../replicate/replicate.service';
 import * as fs from 'fs';
 import { CacheManagerService } from '../cache-manager/cache-manager.service';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 
 @Injectable()
 export class VideoService {
@@ -30,7 +31,7 @@ export class VideoService {
 
   async create(data: createVideoDto, ip: string) {
     try {
-      if (!this.cacheService.UserCanGenerateVideo(ip)) {
+      if (!this.cacheService.userCanGenerateVideo(ip)) {
         throw new HttpException(
           `You can only generate ${this.requestsLimit} video every day`,
           HttpStatus.TOO_MANY_REQUESTS,
@@ -47,6 +48,9 @@ export class VideoService {
         data.voice ?? 'nova',
       );
       const images = await this.replicateService.getImages(story, uniqueId);
+
+      const imageDir = join('output', 'videos');
+      fs.mkdirSync(imageDir, { recursive: true });
 
       return new Promise(async (resolve, reject) => {
         try {

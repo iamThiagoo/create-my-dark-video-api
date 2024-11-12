@@ -65,7 +65,9 @@ export class OpenaiService {
     voice: VoiceOptions = 'nova',
   ): Promise<string> {
     try {
-      const speechFile = path.resolve(`output/audios/${uniqueId}.mp3`);
+      const speechDir = path.resolve('output/audios');
+      const speechFile = path.join(speechDir, `${uniqueId}.mp3`);
+      await fs.promises.mkdir(speechDir, { recursive: true });
 
       const mp3 = await this.openai.audio.speech.create({
         model: 'tts-1',

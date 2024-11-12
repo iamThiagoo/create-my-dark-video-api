@@ -17,7 +17,7 @@ export class CacheManagerService {
       this.configService.get<number>('REQUESTS_LIMIT_CACHE') || 5;
   }
 
-  async UserCanGenerateVideo(ip: string): Promise<boolean> {
+  async userCanGenerateVideo(ip: string): Promise<boolean> {
     const cacheRequests: number = await this.cacheManager.get<number>(ip) || 0;
 
     if (cacheRequests >= this.requestsLimit) {

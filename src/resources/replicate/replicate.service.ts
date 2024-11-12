@@ -26,16 +26,16 @@ export class ReplicateService {
   async getImages(story: string, uniqueId: string) {
     try {
       const keywords = getStoryChunks(story);
-      const imageDir = `output/images/${uniqueId}`;
+      const imageDir = join('output', 'images', uniqueId);
       mkdirSync(imageDir, { recursive: true });
-      const imagesNameArray = [];
-
+      const imagesNameArray: string[] = [];
+  
       await Promise.all(
         keywords.map(async (keyword, index) => {
           const input = {
             prompt: `${keyword}`,
           };
-
+  
           const filename = `image_${index + 1}.jpg`;
           const output = await this.replicate.run(this.replicateModel, {
             input,
@@ -43,7 +43,7 @@ export class ReplicateService {
           const imageUrl = output[0];
           const response = await fetch(imageUrl);
           const readableStream = response.body;
-
+  
           await this.saveImageFromStream(
             readableStream,
             join(imageDir, filename),
@@ -51,7 +51,7 @@ export class ReplicateService {
           imagesNameArray.push(join(imageDir, filename));
         }),
       );
-
+  
       return imagesNameArray;
     } catch (error) {
       console.error('Error getting Replicate images:', error);
